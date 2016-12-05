@@ -151,6 +151,12 @@ class session:
 		self.name_z, self.range_z = name_z, range_z
 
 	def set_mode(self,mode): self.mode = mode
+	def switch_mode(self):
+		if self.mode == "scatter": self.mode = "2Dhist" 
+		elif self.mode == "2Dhist": self.mode = "scatter"
+		print("Now in mode ",self.mode)
+		self.make_plot()
+		self.pygame_update()
 
 	def make_plot(self):
 
@@ -306,6 +312,7 @@ class session:
 			self.dimensions_update()
 			askbutton(self,self.screen,"Task",500,75,200,50,green,bright_green)
 			button(self.screen,"Save",500,325,100,50,green,bright_green,self.savefig)
+			button(self.screen,"Mode",650,325,100,50,green,bright_green,self.switch_mode)
 			pygame.display.flip()
 			#self.clock.tick(3)
 			pass
