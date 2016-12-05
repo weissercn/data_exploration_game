@@ -12,7 +12,7 @@ from pygame.locals import *
 
 #mpl.rc('font', family='serif', size=28, serif="Times New Roman")
 
-
+font_name="Times New Roman"
 
 red = (200,0,0)
 green = (0,200,0)
@@ -44,7 +44,8 @@ def button(screen,msg,x,y,w,h,ic,ac,action=None):
     else:
         pygame.draw.rect(screen, ic,(x,y,w,h))
 
-    smallText = pygame.font.SysFont("comicsansms",20)
+    #smallText = pygame.font.SysFont("comicsansms",20)
+    smallText = pygame.font.SysFont(font_name,22)
     textSurf, textRect = text_objects(msg, smallText)
     textRect.center = ( (x+(w/2)), (y+(h/2)) )
     screen.blit(textSurf, textRect)
@@ -80,7 +81,8 @@ def askbutton(s,screen,msg,x,y,w,h,ic,ac):
 			s.make_plot()
 			s.pygame_update()
 		else:
-			smallText = pygame.font.SysFont("comicsansms",20) 
+			#smallText = pygame.font.SysFont("comicsansms",20) 
+			smallText = pygame.font.SysFont(font_name,22)
 			textSurf, textRect = text_objects("Unrecognised command", smallText)
 			textRect.topleft = (500,275)
 			s.screen.blit(textSurf, textRect)
@@ -102,10 +104,12 @@ def get_key():
 
 def display_box(screen, msg, x,y,w,h, ic,ac):
 	"Print a message in a box in the middle of the screen"
-	fontobject = pygame.font.Font(None,18)
+	#fontobject = pygame.font.Font(None,18)
+	fontobject = pygame.font.SysFont(font_name,22)
 	pygame.draw.rect(screen, ac,(x,y,w,h))
 	if len(msg) != 0:
-		smallText = pygame.font.SysFont("comicsansms",20)
+		#smallText = pygame.font.SysFont("comicsansms",20)
+		smallText = pygame.font.SysFont(font_name,22)
 		textSurf, textRect = text_objects(msg, smallText)
 		textRect.center = ( (x+(w/2)), (y+(h/2)) )
 		screen.blit(textSurf, textRect)
@@ -204,7 +208,7 @@ class session:
 		pygame.display.flip()
 
 	def dimensions_update(self):
-		smallText = pygame.font.SysFont("comicsansms",20)
+		smallText = pygame.font.SysFont(font_name,22)
                 textSurf, textRect = text_objects("Set like: x a 0. 100.", smallText)
                 textRect.topleft = (500,25)
                 self.screen.blit(textSurf, textRect)
