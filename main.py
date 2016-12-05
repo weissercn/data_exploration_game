@@ -43,6 +43,7 @@ def button(screen,msg,x,y,w,h,ic,ac,action=None):
             action()         
     else:
         pygame.draw.rect(screen, ic,(x,y,w,h))
+    pygame.draw.rect(screen, white,(x+5,y+5,w-10,h-10))
 
     #smallText = pygame.font.SysFont("comicsansms",20)
     smallText = pygame.font.SysFont(font_name,22)
@@ -57,7 +58,7 @@ def askbutton(s,screen,msg,x,y,w,h,ic,ac):
     #print(click)
     if x+w > mouse[0] > x and y+h > mouse[1] > y:
         pygame.draw.rect(screen, ac,(x,y,w,h))
-
+	pygame.draw.rect(screen, white,(x+5,y+5,w-10,h-10))
         if click[0] == 1:
         	command_str= ask(screen,msg,x,y,w,h,ic,ac)
 		command_list = command_str.split(" ")
@@ -74,7 +75,7 @@ def askbutton(s,screen,msg,x,y,w,h,ic,ac):
 				acceptable_command = True
 		if command_list[0]=="z"and  len(command_list)==3:
 			if (command_list[1] in s.df.columns.values.tolist() and is_number(command_list[2])):
-				s.set_z(command_list[1], command_list[2])
+				s.set_z(command_list[1], float(command_list[2]))
 				acceptable_command = True
 
 		if acceptable_command:
@@ -89,9 +90,12 @@ def askbutton(s,screen,msg,x,y,w,h,ic,ac):
 			print("Unrecognised command")
     else:
         pygame.draw.rect(screen, ic,(x,y,w,h))
+	pygame.draw.rect(screen, white,(x+5,y+5,w-10,h-10))
+
+
 
 def text_objects(text,font):
-	textSurface = font.render(text, True, white)
+	textSurface = font.render(text, True, black)
 	return textSurface, textSurface.get_rect()
 
 def get_key():
@@ -107,6 +111,7 @@ def display_box(screen, msg, x,y,w,h, ic,ac):
 	#fontobject = pygame.font.Font(None,18)
 	fontobject = pygame.font.SysFont(font_name,22)
 	pygame.draw.rect(screen, ac,(x,y,w,h))
+	pygame.draw.rect(screen, white,(x+5,y+5,w-10,h-10))
 	if len(msg) != 0:
 		#smallText = pygame.font.SysFont("comicsansms",20)
 		smallText = pygame.font.SysFont(font_name,22)
@@ -147,8 +152,8 @@ class session:
         def set_y(self, name_y, range_y):
                 #print("set_y") 
 		self.name_y, self.range_y = name_y, range_y
-	def set_z(self, name_z, range_z):
-		self.name_z, self.range_z = name_z, range_z
+	def set_z(self, name_z, value_z):
+		self.name_z, self.value_z = name_z, value_z
 
 	def set_mode(self,mode): self.mode = mode
 	def switch_mode(self):
@@ -174,14 +179,22 @@ class session:
 		
 		elif self.mode == "scatter":
 			df1 = self.df[[self.name_x, self.name_y, self.name_z]]
-
-			if self.value_z >0: 
-				#df2 = df1.loc[df1[self.name_z] > self.value_z].sort_values(by=self.name_z,ascending=0)
-				df2 = df1.loc[df1[self.name_z] > self.value_z].reindex(np.random.permutation(df1.index))
-				df2['dist']= (df2[self.name_z] - self.value_z)
+			len_df1 = len(df1.index)
+			cut = int(self.value_z/100*len_df1)
+			if cut==0: cut=1
+			if cut==len_df1: cut-=1
+			print("cut : ",cut)
+			if not self.value_z <0: 
+				df1 = df1.sort_values(by=self.name_z,ascending=0)
+				df1 = df1.iloc[:-cut]
+				z_cutoff = df1.iloc[-1][self.name_z]
+				df2 = df1.reindex(np.random.permutation(df1.index))
+				df2['dist']= (df2[self.name_z] - z_cutoff)
 			else:               
-				#df2 = df1.loc[df1[self.name_z] < -1.*self.value_z].sort_values(by=self.name_z,ascending=1)
-				df2 = df1.loc[df1[self.name_z] < -1.*self.value_z].reindex(np.random.permutation(df1.index))
+				df1 = df1.sort_values(by=self.name_z,ascending=1)
+				df1 = df1.iloc[:-cut]
+				z_cutoff = df1.iloc[-1][self.name_z]
+				df2 = df1.reindex(np.random.permutation(df1.index))
 				df2['dist']= -(df2[self.name_z] + self.value_z)
 
 			ax.scatter(df2[self.name_x],df2[self.name_y], c= df2['dist'], lw = 0 )
@@ -253,7 +266,7 @@ class session:
 			self.screen.blit(textSurf, textRect)
 
 	def pygame_update(self):
-		pygame.draw.rect(self.screen, black,(0,0,800,400))
+		pygame.draw.rect(self.screen, white,(0,0,800,400))
 		self.plot_update()
 		self.dimensions_update()
 
@@ -297,6 +310,7 @@ class session:
 		self.clock = pygame.time.Clock()
 		window = pygame.display.set_mode((800, 400), DOUBLEBUF)
                 self.screen = pygame.display.get_surface()
+		pygame.draw.rect(self.screen, white,(0,0,800,400))
 		self.make_plot()	
 		self.plot_update()
 		while True:
