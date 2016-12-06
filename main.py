@@ -165,7 +165,7 @@ class session:
 
 	def make_plot(self):
 
-		fig = plt.figure(figsize=[4, 4], # Inches
+		fig = plt.figure(figsize=[4.5, 4], # Inches
 				   dpi=100,        # 100 dots per inch, so the resulting buffer is 400x400 pixels
 				   )
 		ax = fig.gca()
@@ -179,15 +179,18 @@ class session:
 		
 		elif self.mode == "scatter":
 			df1 = self.df[[self.name_x, self.name_y, self.name_z]]
+			z_min, z_max = df1.min(axis=0)[self.name_z], df1.max(axis=0)[self.name_z]
 			len_df1 = len(df1.index)
-			cut = int(self.value_z/100*len_df1)
+			cut = int(self.value_z/100.*len_df1)
 			if cut==0: cut=1
 			if cut==len_df1: cut-=1
 			print("cut : ",cut)
 			if not self.value_z <0: 
 				df1 = df1.sort_values(by=self.name_z,ascending=0)
 				df1 = df1.iloc[:-cut]
+				print("len(df1.index) : ", len(df1.index))
 				z_cutoff = df1.iloc[-1][self.name_z]
+				print("z_cutoff : ", z_cutoff)
 				df2 = df1.reindex(np.random.permutation(df1.index))
 				df2['dist']= (df2[self.name_z] - z_cutoff)
 			else:               
@@ -195,10 +198,11 @@ class session:
 				df1 = df1.iloc[:-cut]
 				z_cutoff = df1.iloc[-1][self.name_z]
 				df2 = df1.reindex(np.random.permutation(df1.index))
-				df2['dist']= -(df2[self.name_z] + self.value_z)
+				df2['dist']= -(df2[self.name_z] + z_cutoff)
 
-			ax.scatter(df2[self.name_x],df2[self.name_y], c= df2['dist'], lw = 0 )
-
+			cax = ax.scatter(df2[self.name_x],df2[self.name_y], c= df2['dist'], lw = 0, vmin = (z_max - z_min)/1000, vmax = z_max - z_min, norm=LogNorm())
+			#cax = ax.scatter(df2[self.name_x],df2[self.name_y], c= df2['dist'], lw = 0, norm=LogNorm(vmin=0, vmax=z_max - z_min))
+			fig.colorbar(cax)
 
 
 		x_min, x_max, y_min, y_max = self.df_min[self.name_x],  self.df_max[self.name_x], self.df_min[self.name_y],  self.df_max[self.name_y]
@@ -319,6 +323,25 @@ class session:
 				if event.type == pygame.QUIT:
 					pygame.quit()
 					quit()
+				if event.type == pygame.KEYDOWN:
+					step = 5
+					if event.key == pygame.K_LEFT and self.range_x[0] >=step:
+						self.range_x = [self.range_x[0]-step, self.range_x[1]-step]
+					if event.key == pygame.K_RIGHT and self.range_x[1] <=100-step:
+                                                self.range_x = [self.range_x[0]+step, self.range_x[1]+step]
+					if event.key == pygame.K_DOWN and self.range_y[0] >=step:
+                                                self.range_y = [self.range_y[0]-step, self.range_y[1]-step]
+                                        if event.key == pygame.K_UP and self.range_y[1] <=100-step:
+                                                self.range_y = [self.range_y[0]+step, self.range_y[1]+step]
+					if event.key == pygame.K_q and self.value_z >=-(100-step):
+                                                self.value_z = self.value_z-step
+                                        if event.key == pygame.K_e and self.value_z <=100-step:
+                                                self.value_z = self.value_z+step
+
+
+					self.make_plot()
+					self.pygame_update()				
+		
 			
 			#command_str =ask(self.screen, "Name")
 			#print("command_str : ",command_str)
